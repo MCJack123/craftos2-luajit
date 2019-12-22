@@ -176,8 +176,7 @@ static LJ_AINLINE int CALL_MUNMAP(void *ptr, size_t size)
 
 #if LJ_64
 /* 64 bit mode needs special support for allocating memory in the lower 2GB. */
-#undef MAP_32BIT
-#if defined(MAP_32BIT)
+#if defined(MAP_32BIT) && !defined(__APPLE__)
 
 #if defined(__sun__)
 #define MMAP_REGION_START	((uintptr_t)0x1000)
