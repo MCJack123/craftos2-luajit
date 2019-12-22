@@ -1128,10 +1128,16 @@ LUA_API int lua_yield(lua_State *L, int nresults)
   return 0;  /* unreachable */
 }
 
+extern void callhook(lua_State *L, int event, BCLine line);
 LUA_API int lua_resume(lua_State *L, int nargs)
 {
-  if (L->cframe == NULL && L->status <= LUA_YIELD)
-    return lj_vm_resume(L, L->top - nargs, 0, 0);
+  int r;
+  if (L->cframe == NULL && L->status <= LUA_YIELD) {
+    //callhook(L, LUA_HOOKRESUME, 0);
+    r = lj_vm_resume(L, L->top - nargs, 0, 0);
+    //callhook(L, LUA_HOOKYIELD, 0);
+    return r;
+  }
   L->top = L->base;
   setstrV(L, L->top, lj_err_str(L, LJ_ERR_COSUSP));
   incr_top(L);

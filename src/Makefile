@@ -36,7 +36,7 @@ CC= $(DEFAULT_CC)
 # to slow down the C part by not omitting it. Debugging, tracebacks and
 # unwinding are not affected -- the assembler part has frame unwind
 # information and GCC emits it where needed (x64) or with -g (see CCDEBUG).
-CCOPT= -O2 -fomit-frame-pointer
+CCOPT= -O2 -fomit-frame-pointer -fno-stack-check -DLUAJIT_ENABLE_GC64
 # Use this if you want to generate a smaller binary (but it's slower):
 #CCOPT= -Os -fomit-frame-pointer
 # Note: it's no longer recommended to use -O3 with GCC 4.x.
@@ -50,7 +50,7 @@ CCOPT= -O2 -fomit-frame-pointer
 # x86/x64 only: For GCC 4.2 or higher and if you don't intend to distribute
 # the binaries to a different machine you could also use: -march=native
 #
-CCOPT_x86= -march=i686
+CCOPT_x86=
 CCOPT_x64=
 CCOPT_arm=
 CCOPT_ppc=
@@ -59,7 +59,7 @@ CCOPT_mips=
 #
 CCDEBUG=
 # Uncomment the next line to generate debug information:
-#CCDEBUG= -g
+CCDEBUG= -g
 #
 CCWARN= -Wall
 # Uncomment the next line to enable more warnings:
@@ -487,7 +487,7 @@ LUAJIT_A= libluajit.a
 LUAJIT_SO= libluajit.so
 LUAJIT_T= luajit
 
-ALL_T= $(LUAJIT_T) $(LUAJIT_A) $(LUAJIT_SO) $(HOST_T)
+ALL_T= $(LUAJIT_A) $(LUAJIT_SO) $(HOST_T)
 ALL_HDRGEN= lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h \
 	    host/buildvm_arch.h
 ALL_GEN= $(LJVM_S) $(ALL_HDRGEN) $(LIB_VMDEFP)
@@ -500,7 +500,7 @@ ALL_RM= $(ALL_T) $(ALL_GEN) *.o host/*.o $(WIN_RM)
 
 # Mixed mode defaults.
 TARGET_O= $(LUAJIT_A)
-TARGET_T= $(LUAJIT_T) $(LUAJIT_SO)
+TARGET_T= $(LUAJIT_A) $(LUAJIT_SO)
 TARGET_DEP= $(LIB_VMDEF) $(LUAJIT_SO)
 
 ifeq (Windows,$(TARGET_SYS))

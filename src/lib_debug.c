@@ -283,7 +283,7 @@ LJLIB_CF(debug_setuservalue)
 
 /* ------------------------------------------------------------------------ */
 
-static const char KEY_HOOK = 'h';
+const char KEY_HOOK = 'h';
 
 static void hookf(lua_State *L, lua_Debug *ar)
 {
@@ -320,60 +320,74 @@ static char *unmakemask(int mask, char *smask)
   return smask;
 }
 
+static void gethooktable (lua_State *L) {
+  lua_pushlightuserdata(L, (void *)&KEY_HOOK);
+  lua_rawget(L, LUA_REGISTRYINDEX);
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    lua_createtable(L, 0, 1);
+    lua_pushlightuserdata(L, (void *)&KEY_HOOK);
+    lua_pushvalue(L, -2);
+    lua_rawset(L, LUA_REGISTRYINDEX);
+  }
+}
+
+extern void setcompmask(lua_State *L, int mask);
 LJLIB_CF(debug_sethook)
 {
   int arg, mask, count;
   lua_Hook func;
-  (void)getthread(L, &arg);
+  lua_State *L1 = getthread(L, &arg);
   if (lua_isnoneornil(L, arg+1)) {
     lua_settop(L, arg+1);
     func = NULL; mask = 0; count = 0;  /* turn off hooks */
-  } else {
+  }
+  else {
     const char *smask = luaL_checkstring(L, arg+2);
     luaL_checktype(L, arg+1, LUA_TFUNCTION);
     count = luaL_optint(L, arg+3, 0);
     func = hookf; mask = makemask(smask, count);
   }
-  lua_pushlightuserdata(L, (void *)&KEY_HOOK);
+  setcompmask(L, mask);
+  gethooktable(L);
+  lua_pushlightuserdata(L, L1);
+  lua_newtable(L);
   lua_pushvalue(L, arg+1);
-  lua_rawset(L, LUA_REGISTRYINDEX);
-  lua_sethook(L, func, mask, count);
+  lua_setfield(L, -2, "func");
+  lua_pushinteger(L, mask);
+  lua_setfield(L, -2, "mask");
+  lua_rawset(L, -3);  /* set new hook */
+  lua_pop(L, 1);  /* remove hook table */
+  //lua_sethook(L1, func, mask, count);  /* set hooks */
   return 0;
 }
 
 LJLIB_CF(debug_gethook)
 {
+  int arg;
+  lua_State *L1 = getthread(L, &arg);
   char buff[5];
-  int mask = lua_gethookmask(L);
-  lua_Hook hook = lua_gethook(L);
-  if (hook != NULL && hook != hookf) {  /* external hook? */
-    lua_pushliteral(L, "external hook");
-  } else {
-    lua_pushlightuserdata(L, (void *)&KEY_HOOK);
-    lua_rawget(L, LUA_REGISTRYINDEX);   /* get hook */
-  }
-  lua_pushstring(L, unmakemask(mask, buff));
-  lua_pushinteger(L, lua_gethookcount(L));
+  gethooktable(L);
+  lua_pushlightuserdata(L, L1);
+  lua_rawget(L, -2);   /* get hook */
+  lua_remove(L, -2);  /* remove hook table */
+  if (!lua_isnil(L, -1)) {
+    lua_getfield(L, -1, "func");
+    lua_getfield(L, -2, "mask");
+    lua_pushstring(L, unmakemask(lua_tointeger(L, -1), buff));
+    lua_remove(L, -2);
+    lua_pushinteger(L, lua_gethookcount(L1));
+  } else return 1;
   return 3;
 }
 
 /* ------------------------------------------------------------------------ */
 
+extern int db_debug (lua_State *L);
+
 LJLIB_CF(debug_debug)
 {
-  for (;;) {
-    char buffer[250];
-    fputs("lua_debug> ", stderr);
-    if (fgets(buffer, sizeof(buffer), stdin) == 0 ||
-	strcmp(buffer, "cont\n") == 0)
-      return 0;
-    if (luaL_loadbuffer(L, buffer, strlen(buffer), "=(debug command)") ||
-	lua_pcall(L, 0, 0, 0)) {
-      fputs(lua_tostring(L, -1), stderr);
-      fputs("\n", stderr);
-    }
-    lua_settop(L, 0);  /* remove eventual returns */
-  }
+  return db_debug(L);
 }
 
 /* ------------------------------------------------------------------------ */

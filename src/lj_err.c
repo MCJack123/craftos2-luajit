@@ -445,10 +445,13 @@ static void err_raise_ext(int errcode)
 
 /* -- Error handling ------------------------------------------------------ */
 
+extern void callhook(lua_State *L, int event, BCLine line);
+
 /* Throw error. Find catch frame, unwind stack and continue. */
 LJ_NOINLINE void LJ_FASTCALL lj_err_throw(lua_State *L, int errcode)
 {
   global_State *g = G(L);
+  callhook(L, LUA_HOOKERROR, 0);
   lj_trace_abort(g);
   setgcrefnull(g->jit_L);
   L->status = 0;
