@@ -451,7 +451,7 @@ extern void callhook(lua_State *L, int event, BCLine line);
 LJ_NOINLINE void LJ_FASTCALL lj_err_throw(lua_State *L, int errcode)
 {
   global_State *g = G(L);
-  callhook(L, LUA_HOOKERROR, 0);
+  if (errcode != LUA_ERRRUN) callhook(L, LUA_HOOKERROR, 0);
   lj_trace_abort(g);
   setgcrefnull(g->jit_L);
   L->status = 0;
@@ -765,6 +765,7 @@ LUA_API lua_CFunction lua_atpanic(lua_State *L, lua_CFunction panicf)
 /* Forwarders for the public API (C calling convention and no LJ_NORET). */
 LUA_API int lua_error(lua_State *L)
 {
+  callhook(L, LUA_HOOKERROR, 0);
   lj_err_run(L);
   return 0;  /* unreachable */
 }
@@ -795,6 +796,7 @@ LUALIB_API int luaL_error(lua_State *L, const char *fmt, ...)
   va_start(argp, fmt);
   msg = lj_str_pushvf(L, fmt, argp);
   va_end(argp);
+  callhook(L, LUA_HOOKERROR, 0);
   lj_err_callermsg(L, msg);
   return 0;  /* unreachable */
 }
