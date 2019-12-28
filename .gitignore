@@ -5,7 +5,11 @@
 *.exp
 *.dll
 *.exe
+*.pdb
 *.manifest
 *.dmp
 *.swp
 .tags
+x64
+Debug
+.vs
