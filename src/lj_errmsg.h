@@ -39,7 +39,7 @@ ERRDEF(OPLEN,	"get length of")
 /* Type checks. */
 ERRDEF(BADSELF,	"calling " LUA_QS " on bad self (%s)")
 ERRDEF(BADARG,	"bad argument #%d to " LUA_QS " (%s)")
-ERRDEF(BADTYPE,	"%s expected, got %s")
+ERRDEF(BADTYPE,	"expected %s, got %s")
 ERRDEF(BADVAL,	"invalid value")
 ERRDEF(NOVAL,	"value expected")
 ERRDEF(NOCORO,	"coroutine expected")
