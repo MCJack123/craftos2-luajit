@@ -397,6 +397,10 @@ LJLIB_CF(debug_debug)
 
 LJLIB_CF(debug_traceback)
 {
+  if (lua_isnoneornil(L, 1)) {
+    luaL_traceback(L, L, "", 1);
+    return 1;
+  }
   int arg;
   lua_State *L1 = getthread(L, &arg);
   const char *msg = lua_tostring(L, arg+1);
