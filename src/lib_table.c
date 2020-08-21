@@ -266,7 +266,6 @@ LJLIB_CF(table_sort)
   return 0;
 }
 
-#if LJ_52
 LJLIB_PUSH("n")
 LJLIB_CF(table_pack)
 {
@@ -282,7 +281,6 @@ LJLIB_CF(table_pack)
   lj_gc_check(L);
   return 1;
 }
-#endif
 
 /* ------------------------------------------------------------------------ */
 
@@ -291,10 +289,8 @@ LJLIB_CF(table_pack)
 LUALIB_API int luaopen_table(lua_State *L)
 {
   LJ_LIB_REG(L, LUA_TABLIBNAME, table);
-#if LJ_52
   lua_getglobal(L, "unpack");
   lua_setfield(L, -2, "unpack");
-#endif
   return 1;
 }
 

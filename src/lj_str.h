@@ -47,4 +47,7 @@ LJ_FUNC char *lj_str_needbuf(lua_State *L, SBuf *sb, MSize sz);
    (sb)->sz = (size))
 #define lj_str_freebuf(g, sb)	lj_mem_free(g, (void *)(sb)->buf, (sb)->sz)
 
+/* size of buffer for 'luaO_utf8esc' function */
+#define UTF8BUFFSZ      8
+
 #endif

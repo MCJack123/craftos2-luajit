@@ -2645,7 +2645,6 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // Returns uint32_t (but less than 2^31).
     |  b <1
     |.  nop
-#if LJ_52
     |9:
     |  lbu TMP0, TAB:TMP2->nomm
     |  andi TMP0, TMP0, 1<<MM_len
@@ -2653,7 +2652,6 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |.  nop
     |  b ->vmeta_len
     |.  nop
-#endif
     break;
 
   /* -- Binary ops -------------------------------------------------------- */

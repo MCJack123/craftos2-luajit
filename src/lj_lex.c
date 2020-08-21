@@ -182,6 +182,14 @@ static void read_long_string(LexState *ls, TValue *tv, int sep)
   }
 }
 
+/* could this break on some systems that don't use ASCII? */
+static int fromhexdigit(int c) {
+  if (c >= '0' && c <= '9') return c - '0';
+  else if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+  else if (c >= 'A' && c <= 'F') return c - 'F' + 10;
+  else return -1;
+}
+
 static void read_string(LexState *ls, int delim, TValue *tv)
 {
   save_and_next(ls);
@@ -203,44 +211,66 @@ static void read_string(LexState *ls, int delim, TValue *tv)
       case 'n': c = '\n'; break;
       case 'r': c = '\r'; break;
       case 't': c = '\t'; break;
+      case 'u': {
+        u_int32_t n;
+        next(ls);
+        if (ls->current != '{') lj_lex_error(ls, TK_string, LJ_ERR_XSTR);
+        next(ls);
+        n = 0;
+        while (n <= 0x10FFFF && ls->current != END_OF_STREAM && lj_char_isxdigit(ls->current)) {
+          n = (n << 4) | fromhexdigit(ls->current);
+          next(ls);
+        }
+        if (ls->current != '}') lj_lex_error(ls, TK_string, LJ_ERR_XSTR);
+        if (n > 0x10FFFF) lj_lex_error(ls, TK_string, LJ_ERR_XSTR);
+        else if (n > 0xFFFF) {
+          save(ls, 0xF0 | (n & 0x1C0000) >> 18);
+          save(ls, 0x80 | (n & 0x3F000) >> 12);
+        } else if (n > 0x7FF) save(ls, 0xE0 | (n & 0xF000) >> 12);
+        else if (n > 0x7F) save(ls, 0xC0 | (n & 0x7C0) >> 6);
+        else {c = n; break;}
+        if (n > 0x7FF) save(ls, 0x80 | (n & 0xFC0) >> 6);
+        c = 0x80 | (n & 0x3F);
+        break;
+      }
       case 'v': c = '\v'; break;
       case 'x':  /* Hexadecimal escape '\xXX'. */
-	c = (next(ls) & 15u) << 4;
-	if (!lj_char_isdigit(ls->current)) {
-	  if (!lj_char_isxdigit(ls->current)) goto err_xesc;
-	  c += 9 << 4;
-	}
-	c += (next(ls) & 15u);
-	if (!lj_char_isdigit(ls->current)) {
-	  if (!lj_char_isxdigit(ls->current)) goto err_xesc;
-	  c += 9;
-	}
-	break;
+        c = (next(ls) & 15u) << 4;
+        if (!lj_char_isdigit(ls->current)) {
+          if (!lj_char_isxdigit(ls->current)) goto err_xesc;
+          c += 9 << 4;
+        }
+        c += (next(ls) & 15u);
+        if (!lj_char_isdigit(ls->current)) {
+          if (!lj_char_isxdigit(ls->current)) goto err_xesc;
+          c += 9;
+        }
+        break;
       case 'z':  /* Skip whitespace. */
-	next(ls);
-	while (lj_char_isspace(ls->current))
-	  if (currIsNewline(ls)) inclinenumber(ls); else next(ls);
-	continue;
+        next(ls);
+        while (lj_char_isspace(ls->current))
+          if (currIsNewline(ls)) inclinenumber(ls); else next(ls);
+        continue;
       case '\n': case '\r': save(ls, '\n'); inclinenumber(ls); continue;
       case '\\': case '\"': case '\'': break;
       case END_OF_STREAM: continue;
       default:
-	if (!lj_char_isdigit(c))
-	  goto err_xesc;
-	c -= '0';  /* Decimal escape '\ddd'. */
-	if (lj_char_isdigit(next(ls))) {
-	  c = c*10 + (ls->current - '0');
-	  if (lj_char_isdigit(next(ls))) {
-	    c = c*10 + (ls->current - '0');
-	    if (c > 255) {
-	    err_xesc:
-	      lj_lex_error(ls, TK_string, LJ_ERR_XESC);
-	    }
-	    next(ls);
-	  }
-	}
-	save(ls, c);
-	continue;
+        if (!lj_char_isdigit(c))
+          goto err_xesc;
+        c -= '0';  /* Decimal escape '\ddd'. */
+        if (lj_char_isdigit(next(ls))) {
+          c = c*10 + (ls->current - '0');
+          if (lj_char_isdigit(next(ls))) {
+            c = c*10 + (ls->current - '0');
+            if (c > 255) {
+            err_xesc:
+              lj_lex_error(ls, TK_string, LJ_ERR_XESC);
+            }
+            next(ls);
+          }
+        }
+        save(ls, c);
+        continue;
       }
       save(ls, c);
       next(ls);

@@ -913,11 +913,7 @@ static TRef rec_mm_len(jit_State *J, TRef tr, TValue *tv)
     TValue *basev = J->L->base + func;
     base[0] = ix.mobj; copyTV(J->L, basev+0, &ix.mobjv);
     base[1] = tr; copyTV(J->L, basev+1, tv);
-#if LJ_52
     base[2] = tr; copyTV(J->L, basev+2, tv);
-#else
-    base[2] = TREF_NIL; setnilV(basev+2);
-#endif
     lj_record_call(J, func, 2);
   } else {
     if (LJ_52 && tref_istab(tr))

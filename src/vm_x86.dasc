@@ -4390,12 +4390,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  mov BASE, RB			// Restore BASE.
     |  movzx RA, PC_RA
     |  jmp <1
-#if LJ_52
     |9:  // Check for __len.
     |  test byte TAB:RB->nomm, 1<<MM_len
     |  jnz <3
     |  jmp ->vmeta_len			// 'no __len' flag NOT set: check.
-#endif
     break;
 
   /* -- Binary ops -------------------------------------------------------- */

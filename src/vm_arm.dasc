@@ -2903,13 +2903,11 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // Returns uint32_t (but less than 2^31).
     |  .IOS mov BASE, RC
     |  b <1
-#if LJ_52
     |9:
     |  ldrb CARG4, TAB:CARG3->nomm
     |  tst CARG4, #1<<MM_len
     |  bne <3				// 'no __len' flag set: done.
     |  b ->vmeta_len
-#endif
     break;
 
   /* -- Binary ops -------------------------------------------------------- */

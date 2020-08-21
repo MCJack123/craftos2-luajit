@@ -3380,13 +3380,11 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  bl extern lj_tab_len		// (GCtab *t)
     |  // Returns uint32_t (but less than 2^31).
     |  b <1
-#if LJ_52
     |9:
     |  lbz TMP0, TAB:TMP2->nomm
     |  andix. TMP0, TMP0, 1<<MM_len
     |  bne <3				// 'no __len' flag set: done.
     |  b ->vmeta_len
-#endif
     break;
 
   /* -- Binary ops -------------------------------------------------------- */

@@ -579,6 +579,30 @@ LJLIB_CF(coroutine_running)
 #endif
 }
 
+static int luaB_codelete (lua_State *L) {
+  lua_getfield(L, LUA_REGISTRYINDEX, "_coroutine_stack"); /* remove coroutine from coroutine stack */
+  if (lua_istable(L, -1)) {
+    int found = 0;
+    for (int i = 1; i <= lua_objlen(L, -1); i++) {
+      lua_rawgeti(L, -1, i);
+      if (found) {
+        lua_rawseti(L, -2, i - found);
+        lua_pushnil(L);
+        lua_rawseti(L, -2, i);
+      } else {
+        if (lua_tothread(L, -1) == lua_tothread(L, 1)) {
+          found = 1;
+          lua_pushnil(L);
+          lua_rawseti(L, -3, i);
+        }
+        lua_pop(L, 1);
+      }
+    }
+  }
+  lua_pop(L, 1);
+  return 0;
+}
+
 LJLIB_CF(coroutine_create)
 {
   lua_State *L1;
@@ -586,6 +610,16 @@ LJLIB_CF(coroutine_create)
     lj_err_argt(L, 1, LUA_TFUNCTION);
   L1 = lua_newthread(L);
   setfuncV(L, L1->top++, funcV(L->base));
+  lua_getfield(L, LUA_REGISTRYINDEX, "_coroutine_stack"); /* add coroutine to coroutine stack */
+  if (lua_istable(L, -1)) {
+    lua_pushvalue(L, -2);
+    lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+    lua_newtable(L);
+    lua_pushcfunction(L, luaB_codelete);
+    lua_setfield(L, -2, "__gc");
+    lua_setmetatable(L, -3);
+  }
+  lua_pop(L, 1);
   return 1;
 }
 
