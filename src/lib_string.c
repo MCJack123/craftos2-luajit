@@ -708,9 +708,44 @@ LJLIB_CF(string_gsub)
 */
 #define MAX_FMTSPEC	(sizeof(FMT_FLAGS) + sizeof(LUA_INTFRMLEN) + 10)
 
+static GCstr *meta_tostring(lua_State *L, int arg)
+{
+  TValue *o = L->base+arg-1;
+  cTValue *mo;
+  lua_assert(o < L->top);  /* Caller already checks for existence. */
+  if (LJ_LIKELY(tvisstr(o)))
+    return strV(o);
+  if (!tvisnil(mo = lj_meta_lookup(L, o, MM_tostring))) {
+    copyTV(L, L->top++, mo);
+    copyTV(L, L->top++, o);
+    lua_call(L, 1, 1);
+    L->top--;
+    if (tvisstr(L->top))
+      return strV(L->top);
+    o = L->base+arg-1;
+    copyTV(L, o, L->top);
+  }
+  if (tvisnumber(o)) {
+    return lj_str_fromnumber(L, o);
+  } else if (tvisnil(o)) {
+    return lj_str_newlit(L, "nil");
+  } else if (tvisfalse(o)) {
+    return lj_str_newlit(L, "false");
+  } else if (tvistrue(o)) {
+    return lj_str_newlit(L, "true");
+  } else {
+    if (tvisfunc(o) && isffunc(funcV(o)))
+      lj_str_pushf(L, "function: builtin#%d", funcV(o)->c.ffid);
+    else
+      lj_str_pushf(L, "%s: %p", lj_typename(o), lua_topointer(L, arg));
+    L->top--;
+    return strV(L->top);
+  }
+}
+
 static void addquoted(lua_State *L, luaL_Buffer *b, int arg)
 {
-  GCstr *str = lj_lib_checkstr(L, arg);
+  GCstr *str = meta_tostring(L, arg);
   int32_t len = (int32_t)str->len;
   const char *s = strdata(str);
   luaL_addchar(b, '"');
@@ -796,41 +831,6 @@ static unsigned LUA_INTFRM_T num2uintfrm(lua_State *L, int arg)
       return (unsigned LUA_INTFRM_T)(LUA_INTFRM_T)numV(o);
     else
       return (unsigned LUA_INTFRM_T)numV(o);
-  }
-}
-
-static GCstr *meta_tostring(lua_State *L, int arg)
-{
-  TValue *o = L->base+arg-1;
-  cTValue *mo;
-  lua_assert(o < L->top);  /* Caller already checks for existence. */
-  if (LJ_LIKELY(tvisstr(o)))
-    return strV(o);
-  if (!tvisnil(mo = lj_meta_lookup(L, o, MM_tostring))) {
-    copyTV(L, L->top++, mo);
-    copyTV(L, L->top++, o);
-    lua_call(L, 1, 1);
-    L->top--;
-    if (tvisstr(L->top))
-      return strV(L->top);
-    o = L->base+arg-1;
-    copyTV(L, o, L->top);
-  }
-  if (tvisnumber(o)) {
-    return lj_str_fromnumber(L, o);
-  } else if (tvisnil(o)) {
-    return lj_str_newlit(L, "nil");
-  } else if (tvisfalse(o)) {
-    return lj_str_newlit(L, "false");
-  } else if (tvistrue(o)) {
-    return lj_str_newlit(L, "true");
-  } else {
-    if (tvisfunc(o) && isffunc(funcV(o)))
-      lj_str_pushf(L, "function: builtin#%d", funcV(o)->c.ffid);
-    else
-      lj_str_pushf(L, "%s: %p", lj_typename(o), lua_topointer(L, arg));
-    L->top--;
-    return strV(L->top);
   }
 }
 
