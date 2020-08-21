@@ -32,6 +32,10 @@
 #include "lj_arch.h"
 #include "lj_alloc.h"
 
+#ifdef LJ_TARGET_OSX
+#include <AvailabilityMacros.h>
+#endif
+
 #ifndef LUAJIT_USE_SYSMALLOC
 
 #define MAX_SIZE_T		(~(size_t)0)
@@ -172,7 +176,11 @@ static LJ_AINLINE int CALL_MUNMAP(void *ptr, size_t size)
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #define MAP_ANONYMOUS		MAP_ANON
 #endif
+#if LJ_TARGET_OSX && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14
+#define MMAP_FLAGS		(MAP_PRIVATE|MAP_ANONYMOUS|MAP_JIT)
+#else
 #define MMAP_FLAGS		(MAP_PRIVATE|MAP_ANONYMOUS)
+#endif
 
 #if LJ_64
 /* 64 bit mode needs special support for allocating memory in the lower 2GB. */

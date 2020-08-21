@@ -96,10 +96,13 @@ static int mcode_setprot(void *p, size_t sz, DWORD prot)
 #define MCPROT_RW	(PROT_READ|PROT_WRITE)
 #define MCPROT_RX	(PROT_READ|PROT_EXEC)
 #define MCPROT_RWX	(PROT_READ|PROT_WRITE|PROT_EXEC)
+#ifndef MAP_JIT
+#define MAP_JIT 0
+#endif
 
 static void *mcode_alloc_at(jit_State *J, uintptr_t hint, size_t sz, int prot)
 {
-  void *p = mmap((void *)hint, sz, prot, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+  void *p = mmap((void *)hint, sz, prot, MAP_PRIVATE|MAP_ANONYMOUS|MAP_JIT, -1, 0);
   if (p == MAP_FAILED) {
     if (!hint) lj_trace_err(J, LJ_TRERR_MCODEAL);
     p = NULL;

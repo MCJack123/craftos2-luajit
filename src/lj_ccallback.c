@@ -216,6 +216,10 @@ static void callback_mcode_init(global_State *g, uint32_t *page)
 
 #endif
 
+#ifndef MAP_JIT
+#define MAP_JIT 0
+#endif
+
 /* Allocate and initialize area for callback function pointers. */
 static void callback_mcode_new(CTState *cts)
 {
@@ -228,7 +232,7 @@ static void callback_mcode_new(CTState *cts)
   if (!p)
     lj_err_caller(cts->L, LJ_ERR_FFI_CBACKOV);
 #elif LJ_TARGET_POSIX
-  p = mmap(NULL, sz, (PROT_READ|PROT_WRITE), MAP_PRIVATE|MAP_ANONYMOUS,
+  p = mmap(NULL, sz, (PROT_READ|PROT_WRITE), MAP_PRIVATE|MAP_ANONYMOUS|MAP_JIT,
 	   -1, 0);
   if (p == MAP_FAILED)
     lj_err_caller(cts->L, LJ_ERR_FFI_CBACKOV);
