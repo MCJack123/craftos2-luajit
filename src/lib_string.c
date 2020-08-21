@@ -745,6 +745,10 @@ static GCstr *meta_tostring(lua_State *L, int arg)
 
 static void addquoted(lua_State *L, luaL_Buffer *b, int arg)
 {
+  if (lua_isnil(L, arg)) {
+    luaL_addlstring(b, "nil", 3);
+    return;
+  }
   GCstr *str = meta_tostring(L, arg);
   int32_t len = (int32_t)str->len;
   const char *s = strdata(str);
