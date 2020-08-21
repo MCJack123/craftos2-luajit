@@ -765,7 +765,7 @@ LUA_API lua_CFunction lua_atpanic(lua_State *L, lua_CFunction panicf)
 /* Forwarders for the public API (C calling convention and no LJ_NORET). */
 LUA_API int lua_error(lua_State *L)
 {
-  callhook(L, LUA_HOOKERROR, 0);
+  //callhook(L, LUA_HOOKERROR, 0); // TODO: fix this
   lj_err_run(L);
   return 0;  /* unreachable */
 }

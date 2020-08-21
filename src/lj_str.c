@@ -323,6 +323,7 @@ const char *lj_str_pushvf(lua_State *L, const char *fmt, va_list argp)
       char buff[UTF8BUFFSZ];
       int l = luaO_utf8esc(buff, va_arg(argp, long));
       addstr(L, sb, buff + UTF8BUFFSZ - l, l);
+      break;
     }
     default:
       addchar(L, sb, '%');
