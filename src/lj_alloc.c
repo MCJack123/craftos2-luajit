@@ -32,7 +32,7 @@
 #include "lj_arch.h"
 #include "lj_alloc.h"
 
-#ifdef LJ_TARGET_OSX
+#if LJ_TARGET_OSX
 #include <AvailabilityMacros.h>
 #endif
 
