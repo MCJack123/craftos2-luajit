@@ -212,7 +212,7 @@ static void read_string(LexState *ls, int delim, TValue *tv)
       case 'r': c = '\r'; break;
       case 't': c = '\t'; break;
       case 'u': {
-        u_int32_t n;
+        uint32_t n;
         next(ls);
         if (ls->current != '{') lj_lex_error(ls, TK_string, LJ_ERR_XSTR);
         next(ls);
