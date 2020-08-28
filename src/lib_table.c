@@ -283,30 +283,6 @@ LJLIB_CF(table_pack)
   return 1;
 }
 
-LJLIB_NOREG LJLIB_CF(table_new)		LJLIB_REC(.)
-{
-  int32_t a = lj_lib_checkint(L, 1);
-  int32_t h = lj_lib_checkint(L, 2);
-  lua_createtable(L, a, h);
-  return 1;
-}
-
-LJLIB_NOREG LJLIB_CF(table_clear)	LJLIB_REC(.)
-{
-  lj_tab_clear(lj_lib_checktab(L, 1));
-  return 0;
-}
-
-static int luaopen_table_new(lua_State *L)
-{
-  return lj_lib_postreg(L, lj_cf_table_new, FF_table_new, "new");
-}
-
-static int luaopen_table_clear(lua_State *L)
-{
-  return lj_lib_postreg(L, lj_cf_table_clear, FF_table_clear, "clear");
-}
-
 /* ------------------------------------------------------------------------ */
 
 #include "lj_libdef.h"

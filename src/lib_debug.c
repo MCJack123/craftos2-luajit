@@ -289,7 +289,7 @@ static void hookf(lua_State *L, lua_Debug *ar)
 {
   static const char *const hooknames[] =
     {"call", "return", "line", "count", "tail return"};
-  lua_pushlightuserdata(L, KEY_HOOK);
+  lua_pushlightuserdata(L, &KEY_HOOK);
   lua_rawget(L, LUA_REGISTRYINDEX);
   if (lua_isfunction(L, -1)) {
     lua_pushstring(L, hooknames[(int)ar->event]);

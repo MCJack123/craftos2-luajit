@@ -1077,65 +1077,6 @@ static void LJ_FASTCALL recff_table_clear(jit_State *J, RecordFFData *rd)
   }  /* else: Interpreter will throw. */
 }
 
-/* -- I/O library fast functions ------------------------------------------ */
-
-/* Get FILE* for I/O function. Any I/O error aborts recording, so there's
-** no need to encode the alternate cases for any of the guards.
-*/
-static TRef recff_io_fp(jit_State *J, TRef *udp, int32_t id)
-{
-  TRef tr, ud, fp;
-  if (id) {  /* io.func() */
-    ud = lj_ir_ggfload(J, IRT_UDATA, GG_OFS(g.gcroot[id]));
-  } else {  /* fp:method() */
-    ud = J->base[0];
-    if (!tref_isudata(ud))
-      lj_trace_err(J, LJ_TRERR_BADTYPE);
-    tr = emitir(IRT(IR_FLOAD, IRT_U8), ud, IRFL_UDATA_UDTYPE);
-    emitir(IRTGI(IR_EQ), tr, lj_ir_kint(J, UDTYPE_IO_FILE));
-  }
-  *udp = ud;
-  fp = emitir(IRT(IR_FLOAD, IRT_PTR), ud, IRFL_UDATA_FILE);
-  emitir(IRTG(IR_NE, IRT_PTR), fp, lj_ir_knull(J, IRT_PTR));
-  return fp;
-}
-
-static void LJ_FASTCALL recff_io_write(jit_State *J, RecordFFData *rd)
-{
-  TRef ud, fp = recff_io_fp(J, &ud, rd->data);
-  TRef zero = lj_ir_kint(J, 0);
-  TRef one = lj_ir_kint(J, 1);
-  ptrdiff_t i = rd->data == 0 ? 1 : 0;
-  for (; J->base[i]; i++) {
-    TRef str = lj_ir_tostr(J, J->base[i]);
-    TRef buf = emitir(IRT(IR_STRREF, IRT_PGC), str, zero);
-    TRef len = emitir(IRTI(IR_FLOAD), str, IRFL_STR_LEN);
-    if (tref_isk(len) && IR(tref_ref(len))->i == 1) {
-      IRIns *irs = IR(tref_ref(str));
-      TRef tr = (irs->o == IR_TOSTR && irs->op2 == IRTOSTR_CHAR) ?
-		irs->op1 :
-		emitir(IRT(IR_XLOAD, IRT_U8), buf, IRXLOAD_READONLY);
-      tr = lj_ir_call(J, IRCALL_fputc, tr, fp);
-      if (results_wanted(J) != 0)  /* Check result only if not ignored. */
-	emitir(IRTGI(IR_NE), tr, lj_ir_kint(J, -1));
-    } else {
-      TRef tr = lj_ir_call(J, IRCALL_fwrite, buf, one, len, fp);
-      if (results_wanted(J) != 0)  /* Check result only if not ignored. */
-	emitir(IRTGI(IR_EQ), tr, len);
-    }
-  }
-  J->base[0] = LJ_52 ? ud : TREF_TRUE;
-}
-
-static void LJ_FASTCALL recff_io_flush(jit_State *J, RecordFFData *rd)
-{
-  TRef ud, fp = recff_io_fp(J, &ud, rd->data);
-  TRef tr = lj_ir_call(J, IRCALL_fflush, fp);
-  if (results_wanted(J) != 0)  /* Check result only if not ignored. */
-    emitir(IRTGI(IR_EQ), tr, lj_ir_kint(J, 0));
-  J->base[0] = TREF_TRUE;
-}
-
 /* -- Debug library fast functions ---------------------------------------- */
 
 static void LJ_FASTCALL recff_debug_getmetatable(jit_State *J, RecordFFData *rd)
