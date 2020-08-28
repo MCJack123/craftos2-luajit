@@ -1,10 +1,11 @@
 @rem Script to build LuaJIT with MSVC.
-@rem Copyright (C) 2005-2019 Mike Pall. See Copyright Notice in luajit.h
+@rem Copyright (C) 2005-2020 Mike Pall. See Copyright Notice in luajit.h
 @rem
 @rem Open a "Visual Studio Command Prompt" (either x86 or x64).
 @rem Then cd to this directory and run this script. Use the following
 @rem options (in order), if needed. The default is a dynamic release build.
 @rem
+@rem   nogc64   disable LJ_GC64 mode for x64
 @rem   debug    emit debug symbols
 @rem   amalg    amalgamated build
 @rem   static   static linkage
@@ -20,6 +21,7 @@
 @set LJLIB=lib /nologo /nodefaultlib
 @set DASMDIR=..\dynasm
 @set DASM=%DASMDIR%\dynasm.lua
+@set DASC=vm_x64.dasc
 @set LJDLLNAME=lua51.dll
 @set LJLIBNAME=lua51.lib
 @set BUILDTYPE=release
@@ -36,10 +38,17 @@ if exist minilua.exe.manifest^
 @set LJARCH=x64
 @minilua
 @if errorlevel 8 goto :X64
+@set DASC=vm_x86.dasc
 @set DASMFLAGS=-D WIN -D JIT -D FFI
 @set LJARCH=x86
+@set LJCOMPILE=%LJCOMPILE% /arch:SSE2
 :X64
-minilua %DASM% -LN %DASMFLAGS% -o host\buildvm_arch.h vm_x86.dasc
+@if "%1" neq "nogc64" goto :GC64
+@shift
+@set DASC=vm_x86.dasc
+@set LJCOMPILE=%LJCOMPILE% /DLUAJIT_DISABLE_GC64
+:GC64
+minilua %DASM% -LN %DASMFLAGS% -o host\buildvm_arch.h %DASC%
 @if errorlevel 1 goto :BAD
 
 %LJCOMPILE% /I "." /I %DASMDIR% host\buildvm*.c
@@ -68,6 +77,7 @@ buildvm -m folddef -o lj_folddef.h lj_opt_fold.c
 @shift
 @set BUILDTYPE=debug
 @set LJCOMPILE=%LJCOMPILE% /Zi %DEBUGCFLAGS%
+@set LJLINK=%LJLINK% /opt:ref /opt:icf /incremental:no
 :NODEBUG
 @set LJLINK=%LJLINK% /%BUILDTYPE%
 @if "%1"=="amalg" goto :AMALGDLL

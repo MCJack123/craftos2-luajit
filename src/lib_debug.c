@@ -1,6 +1,6 @@
 /*
 ** Debug library.
-** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2020 Mike Pall. See Copyright Notice in luajit.h
 **
 ** Major portions taken verbatim or adapted from the Lua interpreter.
 ** Copyright (C) 1994-2008 Lua.org, PUC-Rio. See Copyright Notice in lua.h
@@ -29,7 +29,7 @@ LJLIB_CF(debug_getregistry)
   return 1;
 }
 
-LJLIB_CF(debug_getmetatable)
+LJLIB_CF(debug_getmetatable)	LJLIB_REC(.)
 {
   lj_lib_checkany(L, 1);
   if (!lua_getmetatable(L, 1)) {
@@ -289,7 +289,7 @@ static void hookf(lua_State *L, lua_Debug *ar)
 {
   static const char *const hooknames[] =
     {"call", "return", "line", "count", "tail return"};
-  lua_pushlightuserdata(L, (void *)&KEY_HOOK);
+  lua_pushlightuserdata(L, KEY_HOOK);
   lua_rawget(L, LUA_REGISTRYINDEX);
   if (lua_isfunction(L, -1)) {
     lua_pushstring(L, hooknames[(int)ar->event]);
