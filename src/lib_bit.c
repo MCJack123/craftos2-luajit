@@ -23,6 +23,7 @@
 #endif
 #include "lj_ff.h"
 #include "lj_lib.h"
+#include <fenv.h>
 
 /* ------------------------------------------------------------------------ */
 
@@ -174,6 +175,7 @@ LJLIB_CF(bit_tohex)		LJLIB_REC(.)
 
 LUALIB_API int luaopen_bit(lua_State *L)
 {
+  fesetround(FE_TOWARDZERO);
   LJ_LIB_REG(L, LUA_BITLIBNAME, bit);
   return 1;
 }
