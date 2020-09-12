@@ -18,7 +18,7 @@
 #define LUA_OSLIBNAME	"os"
 #define LUA_LOADLIBNAME	"package"
 #define LUA_DBLIBNAME	"debug"
-#define LUA_BITLIBNAME	"bit"
+#define LUA_BITLIBNAME	"bit32"
 #define LUA_JITLIBNAME	"jit"
 #define LUA_FFILIBNAME	"ffi"
 #define LUA_UTF8LIBNAME	"utf8"
