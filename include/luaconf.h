@@ -12,10 +12,10 @@
 #include <limits.h>
 #include <stddef.h>
 
-#define LUA_BUILD_AS_DLL 1
 
 /* Default path for loading Lua and C modules with require(). */
 #if defined(_WIN32)
+#define LUA_BUILD_AS_DLL 1
 /*
 ** In Windows, any exclamation mark ('!') in the path is replaced by the
 ** path of the directory of the executable file of the current process.
