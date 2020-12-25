@@ -1303,3 +1303,7 @@ LUA_API void lua_setallocf(lua_State *L, lua_Alloc f, void *ud)
   g->allocf = f;
 }
 
+LUA_API void lua_halt(lua_State *L) {
+  // do nothing; halting LuaJIT is much more complex than PUC Lua
+}
+

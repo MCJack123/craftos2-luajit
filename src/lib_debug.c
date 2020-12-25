@@ -21,6 +21,8 @@
 
 /* ------------------------------------------------------------------------ */
 
+void (*setcompmask)(lua_State *L, int mask) = NULL;
+
 #define LJLIB_MODULE_debug
 
 LJLIB_CF(debug_getregistry)
@@ -283,7 +285,7 @@ LJLIB_CF(debug_setuservalue)
 
 /* ------------------------------------------------------------------------ */
 
-const char KEY_HOOK = 'h';
+LUALIB_API const char KEY_HOOK = 'h';
 
 static void hookf(lua_State *L, lua_Debug *ar)
 {
@@ -332,7 +334,6 @@ static void gethooktable (lua_State *L) {
   }
 }
 
-extern void setcompmask(lua_State *L, int mask);
 LJLIB_CF(debug_sethook)
 {
   int arg, mask, count;
@@ -348,7 +349,7 @@ LJLIB_CF(debug_sethook)
     count = luaL_optint(L, arg+3, 0);
     func = hookf; mask = makemask(smask, count);
   }
-  setcompmask(L, mask);
+  if (setcompmask != NULL) setcompmask(L, mask);
   gethooktable(L);
   lua_pushlightuserdata(L, L1);
   lua_newtable(L);
@@ -383,7 +384,23 @@ LJLIB_CF(debug_gethook)
 
 /* ------------------------------------------------------------------------ */
 
-extern int db_debug (lua_State *L);
+static int db_debug_default (lua_State *L) {
+  for (;;) {
+    char buffer[250];
+    fputs("lua_debug> ", stderr);
+    if (fgets(buffer, sizeof(buffer), stdin) == 0 ||
+        strcmp(buffer, "cont\n") == 0)
+      return 0;
+    if (luaL_loadbuffer(L, buffer, strlen(buffer), "=(debug command)") ||
+        lua_pcall(L, 0, 0, 0)) {
+      fputs(lua_tostring(L, -1), stderr);
+      fputs("\n", stderr);
+    }
+    lua_settop(L, 0);  /* remove eventual returns */
+  }
+}
+
+int (*db_debug)(lua_State *L) = db_debug_default;
 
 LJLIB_CF(debug_debug)
 {
@@ -413,11 +430,36 @@ LJLIB_CF(debug_traceback)
 
 /* ------------------------------------------------------------------------ */
 
+int (*db_breakpoint)(lua_State *L) = NULL;
+int (*db_unsetbreakpoint)(lua_State *L) = NULL;
+
+
+LJLIB_CF(debug_setbreakpoint)
+{
+  if (db_breakpoint == NULL) return 0;
+  return db_breakpoint(L);
+}
+
+LJLIB_CF(debug_unsetbreakpoint)
+{
+  if (db_unsetbreakpoint == NULL) return 0;
+  return db_unsetbreakpoint(L);
+}
+
+/* ------------------------------------------------------------------------ */
+
 #include "lj_libdef.h"
 
 LUALIB_API int luaopen_debug(lua_State *L)
 {
   LJ_LIB_REG(L, LUA_DBLIBNAME, debug);
   return 1;
+}
+
+LUALIB_API void lualib_debug_ccpc_functions(void(*scm)(lua_State *L, int), lua_CFunction debug, lua_CFunction breakpoint, lua_CFunction unsetbreakpoint) {
+  setcompmask = scm;
+  db_debug = debug;
+  db_breakpoint = breakpoint;
+  db_unsetbreakpoint = unsetbreakpoint;
 }
 

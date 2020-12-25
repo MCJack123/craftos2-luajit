@@ -74,11 +74,11 @@
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NMakeBuildCommandLine>cd src &amp;&amp; msvcbuild.bat debug static</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>cd src &amp;&amp; msvcbuild.bat debug</NMakeBuildCommandLine>
     <NMakeOutput>src\luajit.lib</NMakeOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <NMakeBuildCommandLine>cd src &amp;&amp; msvcbuild.bat static</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>cd src &amp;&amp; msvcbuild.bat</NMakeBuildCommandLine>
     <NMakeOutput>src\lua51.lib</NMakeOutput>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -249,6 +249,7 @@
     <None Include="doc\luajit.html" />
     <None Include="doc\running.html" />
     <None Include="doc\status.html" />
+    <None Include="src\msvcbuild.bat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

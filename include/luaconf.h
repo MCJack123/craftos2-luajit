@@ -12,6 +12,8 @@
 #include <limits.h>
 #include <stddef.h>
 
+#define LUA_BUILD_AS_DLL 1
+
 /* Default path for loading Lua and C modules with require(). */
 #if defined(_WIN32)
 /*

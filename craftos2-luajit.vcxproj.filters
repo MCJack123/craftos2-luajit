@@ -474,5 +474,8 @@
     <None Include="doc\luajit.html" />
     <None Include="doc\running.html" />
     <None Include="doc\status.html" />
+    <None Include="src\msvcbuild.bat">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
