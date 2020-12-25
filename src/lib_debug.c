@@ -21,7 +21,7 @@
 
 /* ------------------------------------------------------------------------ */
 
-void (*setcompmask)(lua_State *L, int mask) = NULL;
+static void (*setcompmask)(lua_State *L, int mask) = NULL;
 
 #define LJLIB_MODULE_debug
 
@@ -400,7 +400,7 @@ static int db_debug_default (lua_State *L) {
   }
 }
 
-int (*db_debug)(lua_State *L) = db_debug_default;
+static int (*db_debug)(lua_State *L) = db_debug_default;
 
 LJLIB_CF(debug_debug)
 {
@@ -430,8 +430,8 @@ LJLIB_CF(debug_traceback)
 
 /* ------------------------------------------------------------------------ */
 
-int (*db_breakpoint)(lua_State *L) = NULL;
-int (*db_unsetbreakpoint)(lua_State *L) = NULL;
+static int (*db_breakpoint)(lua_State *L) = NULL;
+static int (*db_unsetbreakpoint)(lua_State *L) = NULL;
 
 
 LJLIB_CF(debug_setbreakpoint)
