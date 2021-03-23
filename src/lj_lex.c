@@ -258,8 +258,7 @@ static void lex_string(LexState *ls, TValue *tv)
       case '\\': case '\"': case '\'': break;
       case LEX_EOF: continue;
       default:
-	if (!lj_char_isdigit(c))
-	  goto err_xesc;
+	if (!lj_char_isdigit(c)) break;
 	c -= '0';  /* Decimal escape '\ddd'. */
 	if (lj_char_isdigit(lex_next(ls))) {
 	  c = c*10 + (ls->c - '0');
