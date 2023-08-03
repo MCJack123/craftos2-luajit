@@ -1,12 +1,13 @@
 /*
 ** Standard library header.
-** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2020 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LUALIB_H
 #define _LUALIB_H
 
 #include "lua.h"
+#include <stdio.h>
 
 #define LUA_FILEHANDLE	"FILE*"
 
@@ -18,9 +19,11 @@
 #define LUA_OSLIBNAME	"os"
 #define LUA_LOADLIBNAME	"package"
 #define LUA_DBLIBNAME	"debug"
-#define LUA_BITLIBNAME	"bit"
+#define LUA_BITLIBNAME	"bit32"
 #define LUA_JITLIBNAME	"jit"
 #define LUA_FFILIBNAME	"ffi"
+#define LUA_UTF8LIBNAME	"utf8"
+
 
 LUALIB_API int luaopen_base(lua_State *L);
 LUALIB_API int luaopen_math(lua_State *L);
@@ -33,8 +36,12 @@ LUALIB_API int luaopen_debug(lua_State *L);
 LUALIB_API int luaopen_bit(lua_State *L);
 LUALIB_API int luaopen_jit(lua_State *L);
 LUALIB_API int luaopen_ffi(lua_State *L);
+LUALIB_API int luaopen_utf8(lua_State *L);
 
 LUALIB_API void luaL_openlibs(lua_State *L);
+
+LUALIB_API void (lualib_debug_ccpc_functions) (void(*scm)(lua_State *L, int), lua_CFunction debug, lua_CFunction breakpoint, lua_CFunction unsetbreakpoint);
+LUALIB_API void (lualib_io_ccpc_functions) (FILE* (*open)(lua_State *L, const char * filename, const char * mode), int (*close)(lua_State *L, FILE * stream));
 
 #ifndef lua_assert
 #define lua_assert(x)	((void)0)

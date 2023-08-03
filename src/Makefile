@@ -36,7 +36,7 @@ CC= $(DEFAULT_CC)
 # to slow down the C part by not omitting it. Debugging, tracebacks and
 # unwinding are not affected -- the assembler part has frame unwind
 # information and GCC emits it where needed (x64) or with -g (see CCDEBUG).
-CCOPT= -O2 -fomit-frame-pointer -fno-stack-check
+CCOPT= -O2 -fomit-frame-pointer -fno-stack-check -fPIC
 # Use this if you want to generate a smaller binary (but it's slower):
 #CCOPT= -Os -fomit-frame-pointer
 # Note: it's no longer recommended to use -O3 with GCC 4.x.
@@ -215,11 +215,11 @@ TARGET_AR= $(CROSS)ar rcus
 TARGET_STRIP= $(CROSS)strip
 
 TARGET_LIBPATH= $(or $(PREFIX),/usr/local)/$(or $(MULTILIB),lib)
-TARGET_SONAME= libluajit-$(ABIVER).so.$(MAJVER)
-TARGET_DYLIBNAME= libluajit-$(ABIVER).$(MAJVER).dylib
+TARGET_SONAME= libluajit-craftos-$(ABIVER).so.$(MAJVER)
+TARGET_DYLIBNAME= libluajit-craftos-$(ABIVER).$(MAJVER).dylib
 TARGET_DYLIBPATH= $(TARGET_LIBPATH)/$(TARGET_DYLIBNAME)
-TARGET_DLLNAME= lua$(NODOTABIVER).dll
-TARGET_DLLDOTANAME= libluajit-$(ABIVER).dll.a
+TARGET_DLLNAME= luajit$(NODOTABIVER).dll
+TARGET_DLLDOTANAME= libluajit-craftos-$(ABIVER).dll.a
 TARGET_XSHLDFLAGS= -shared -fPIC -Wl,-soname,$(TARGET_SONAME)
 TARGET_DYNXLDOPTS=
 
@@ -510,8 +510,8 @@ LIB_VMDEF= jit/vmdef.lua
 LIB_VMDEFP= $(LIB_VMDEF)
 
 LUAJIT_O= luajit.o
-LUAJIT_A= libluajit.a
-LUAJIT_SO= libluajit.so
+LUAJIT_A= libluajit-craftos.a
+LUAJIT_SO= libluajit-craftos.so
 LUAJIT_T= luajit
 
 ALL_T= $(LUAJIT_A) $(LUAJIT_SO) $(HOST_T)
