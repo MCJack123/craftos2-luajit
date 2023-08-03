@@ -866,4 +866,12 @@ LUALIB_API int luaopen_ffi(lua_State *L)
   return 1;
 }
 
+LUALIB_API void* luaJIT_ffi_getbuf(lua_State *L, int idx) {
+  CTState *cts = ctype_cts(L);
+  TValue *o = lj_lib_checkany(L, idx);
+  void *p;
+  lj_cconv_ct_tv(cts, ctype_get(cts, CTID_P_CVOID), (uint8_t *)&p, o, CCF_ARG(1));
+  return p;
+}
+
 #endif
