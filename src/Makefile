@@ -511,7 +511,11 @@ LIB_VMDEFP= $(LIB_VMDEF)
 
 LUAJIT_O= luajit.o
 LUAJIT_A= libluajit-craftos.a
+ifeq (Darwin,$(TARGET_SYS))
+LUAJIT_SO= libluajit-craftos.dylib
+else
 LUAJIT_SO= libluajit-craftos.so
+endif
 LUAJIT_T= luajit
 
 ALL_T= $(LUAJIT_A) $(LUAJIT_SO) $(HOST_T)
