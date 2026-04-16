@@ -167,6 +167,34 @@ SBuf * LJ_FASTCALL lj_buf_putstr(SBuf *sb, GCstr *s)
   return sb;
 }
 
+#define UTF8BUFFSZ 8
+
+static int utf8esc(char *buff, int x) {
+    int n = 1;  /* number of bytes put in buffer (backwards) */
+    if (x < 0x80)  /* ascii? */
+        buff[UTF8BUFFSZ - 1] = cast(char, x);
+    else {  /* need continuation bytes */
+        unsigned int mfb = 0x3f;  /* maximum that fits in first byte */
+        do {  /* add continuation bytes */
+            buff[UTF8BUFFSZ - (n++)] = cast(char, 0x80 | (x & 0x3f));
+            x >>= 6;  /* remove added bits */
+            mfb >>= 1;  /* now there is one less bit available in first byte */
+        } while (x > mfb);  /* still needs continuation byte? */
+        buff[UTF8BUFFSZ - n] = cast(char, (~mfb << 1) | x);  /* add first byte */
+    }
+    return n;
+}
+
+SBuf * LJ_FASTCALL lj_buf_putu(SBuf *sb, int c)
+{
+  char buff[UTF8BUFFSZ];
+  MSize len = utf8esc(buff, c);
+  char *w = lj_buf_more(sb, len);
+  w = lj_buf_wmem(w, buff + UTF8BUFFSZ - len, len);
+  sb->w = w;
+  return sb;
+}
+
 /* -- High-level buffer put operations ------------------------------------ */
 
 SBuf * LJ_FASTCALL lj_buf_putstr_reverse(SBuf *sb, GCstr *s)

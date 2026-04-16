@@ -25,7 +25,7 @@
 
 static const uint8_t strfmt_map[('x'-'A')+1] = {
   STRFMT_A,0,0,0,STRFMT_E,STRFMT_F,STRFMT_G,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,STRFMT_X,0,0,
+  0,0,0,0,0,0,0,STRFMT_UU,0,0,STRFMT_X,0,0,
   0,0,0,0,0,0,
   STRFMT_A,0,STRFMT_C,STRFMT_D,STRFMT_E,STRFMT_F,STRFMT_G,0,STRFMT_I,0,0,0,0,
   0,STRFMT_O,STRFMT_P,STRFMT_Q,0,STRFMT_S,0,STRFMT_U,0,0,STRFMT_X
@@ -575,7 +575,8 @@ const char *lj_strfmt_pushvf(lua_State *L, const char *fmt, va_list argp)
       break;
       }
     case STRFMT_CHAR:
-      lj_buf_putb(sb, va_arg(argp, int));
+      if (sf & STRFMT_T_UNICODE) lj_buf_putu(sb, va_arg(argp, int));
+      else lj_buf_putb(sb, va_arg(argp, int));
       break;
     case STRFMT_PTR:
       lj_strfmt_putptr(sb, va_arg(argp, void *));

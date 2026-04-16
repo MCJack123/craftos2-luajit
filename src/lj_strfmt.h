@@ -32,6 +32,7 @@ typedef enum FormatType {
 #define STRFMT_T_FP_F	0x0020	/* STRFMT_NUM */
 #define STRFMT_T_FP_G	0x0030	/* STRFMT_NUM */
 #define STRFMT_T_QUOTED	0x0010	/* STRFMT_STR */
+#define STRFMT_T_UNICODE 0x0010 /* STRFMT_CHAR */
 
 /* Format flags. */
 #define STRFMT_F_LEFT	0x0100
@@ -63,6 +64,7 @@ typedef enum FormatType {
 #define STRFMT_Q	(STRFMT_STR|STRFMT_T_QUOTED)
 #define STRFMT_S	(STRFMT_STR)
 #define STRFMT_U	(STRFMT_UINT)
+#define STRFMT_UU	(STRFMT_CHAR|STRFMT_T_UNICODE)
 #define STRFMT_X	(STRFMT_UINT|STRFMT_T_HEX)
 #define STRFMT_G14	(STRFMT_G | ((14+1) << STRFMT_SH_PREC))
 
